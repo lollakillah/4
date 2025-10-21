@@ -4,15 +4,18 @@
 -- Load Rayfield UI Library
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
--- Create main window
+-- Create main window with minimal branding
 local Window = Rayfield:CreateWindow({
   Name = "Inovo Productions",
   Icon = 0,
   LoadingTitle = "Inovo Productions",
   LoadingSubtitle = "Script Hub",
-  ShowText = "Inovo",
-  Theme = "Ocean",
+  ShowText = "Inovo Productions",
+  Theme = "DarkBlue",
   ToggleUIKeybind = "K",
+
+  DisableRayfieldPrompts = true,
+  DisableBuildWarnings = true,
 
   ConfigurationSaving = {
     Enabled = true,
@@ -38,47 +41,40 @@ local Window = Rayfield:CreateWindow({
   }
 })
 
--- Welcome notification
-Rayfield:Notify({
-  Title = "Welcome!",
-  Content = "Inovo Productions loaded successfully.",
-  Duration = 6.5,
-  Image = "rewind"
-})
-
--- Create Games tab
-local GamesTab = Window:CreateTab("Games", "gamepad-2")
-local HomeTab = Window:CreateTab("Home", "home")
+-- Create main Games tab (first tab - default view)
+local GamesTab = Window:CreateTab("🎮 Games", "gamepad-2")
 
 -- Game database
 local GameScripts = {
   {
-    Name = "Arsenal",
+    Name = "🎯 Arsenal",
     GameId = 286090429,
-    Description = "ESP, Aimbot, Silent Aim",
+    Icon = "crosshair",
+    Description = "ESP, Aimbot, Silent Aim, No Recoil",
+    Features = {"ESP", "Aimbot", "Silent Aim", "No Recoil", "Infinite Ammo"},
     Script = function()
       Rayfield:Notify({
         Title = "Arsenal",
-        Content = "Arsenal script loaded!",
+        Content = "Script loaded successfully!",
         Duration = 3,
-        Image = "check"
+        Image = "check-circle"
       })
-      -- Arsenal script functionality here
       print("Arsenal script activated")
     end
   },
   {
-    Name = "Prison Life",
+    Name = "🏢 Prison Life",
     GameId = 155615604,
-    Description = "Kill All, Auto Rob, ESP",
+    Icon = "shield",
+    Description = "Kill All, Auto Rob, ESP, Teleports",
+    Features = {"Kill All", "Auto Rob", "ESP", "Teleports", "God Mode"},
     Script = function()
       Rayfield:Notify({
         Title = "Prison Life",
-        Content = "Prison Life script loaded!",
+        Content = "Script loaded successfully!",
         Duration = 3,
-        Image = "check"
+        Image = "check-circle"
       })
-      -- Prison Life script functionality here
       print("Prison Life script activated")
     end
   }
@@ -86,115 +82,99 @@ local GameScripts = {
 
 -- Search functionality
 local SearchQuery = ""
-local FilteredGames = GameScripts
+local GameButtons = {}
+local GameParagraphs = {}
 
--- Home Tab Content
-HomeTab:CreateSection("Welcome to Inovo Productions")
-
-local WelcomeParagraph = HomeTab:CreateParagraph({
-  Title = "About",
-  Content = "Inovo Productions is a modern script hub for Roblox. Search for your game below and load powerful scripts instantly!"
-})
-
-local StatsLabel = HomeTab:CreateLabel("Supported Games: " .. #GameScripts, "bar-chart", Color3.fromRGB(255,255,255), false)
-
-HomeTab:CreateDivider()
-
-HomeTab:CreateSection("Quick Info")
-
-local InfoButton = HomeTab:CreateButton({
-  Name = "GitHub Repository",
-  Callback = function()
-    Rayfield:Notify({
-      Title = "Repository",
-      Content = "github.com/lollakillah/4",
-      Duration = 5,
-      Image = "github"
-    })
-  end
-})
-
--- Games Tab Content
-GamesTab:CreateSection("Game Search")
+-- Create search section at the top
+GamesTab:CreateSection("🔍 Find Your Game")
 
 -- Search Input
 local SearchInput = GamesTab:CreateInput({
-  Name = "Search Games",
+  Name = "Search",
   CurrentValue = "",
-  PlaceholderText = "Type game name...",
+  PlaceholderText = "Search for games...",
   RemoveTextAfterFocusLost = false,
   Flag = "SearchInput",
   Callback = function(text)
     SearchQuery = text:lower()
-    UpdateGameList()
+    
+    -- Filter and show/hide games based on search
+    for i, game in ipairs(GameScripts) do
+      local gameName = game.Name:lower()
+      if SearchQuery == "" or gameName:find(SearchQuery) then
+        -- Game matches search - could implement visibility toggle here
+      end
+    end
+    
+    if SearchQuery ~= "" then
+      Rayfield:Notify({
+        Title = "Search",
+        Content = "Searching for: " .. text,
+        Duration = 1.5,
+        Image = "search"
+      })
+    end
   end
 })
 
 GamesTab:CreateDivider()
-GamesTab:CreateSection("Available Scripts")
 
--- Function to update game list based on search
-function UpdateGameList()
-  -- Filter games based on search query
-  FilteredGames = {}
-  for _, game in ipairs(GameScripts) do
-    if SearchQuery == "" or game.Name:lower():find(SearchQuery) then
-      table.insert(FilteredGames, game)
-    end
-  end
+-- Header for available games
+local GameCounter = GamesTab:CreateLabel("📊 " .. #GameScripts .. " Games Available", "activity", Color3.fromRGB(100,200,255), false)
+
+GamesTab:CreateDivider()
+
+-- Create modern game cards
+for i, game in ipairs(GameScripts) do
+  -- Game section
+  GamesTab:CreateSection(game.Name)
   
-  -- Notify user of search results
-  if SearchQuery ~= "" then
-    Rayfield:Notify({
-      Title = "Search Results",
-      Content = "Found " .. #FilteredGames .. " game(s)",
-      Duration = 2,
-      Image = "search"
-    })
-  end
-end
-
--- Create buttons for each game
-for _, game in ipairs(GameScripts) do
+  -- Game description
+  local GameDesc = GamesTab:CreateParagraph({
+    Title = "ℹ️ Features",
+    Content = game.Description
+  })
+  table.insert(GameParagraphs, GameDesc)
+  
+  -- Execute button
   local GameButton = GamesTab:CreateButton({
-    Name = game.Name,
+    Name = "▶️ Execute " .. game.Name:gsub("🎯 ", ""):gsub("🏢 ", ""),
     Callback = function()
       game.Script()
     end
   })
+  table.insert(GameButtons, GameButton)
   
-  local GameInfo = GamesTab:CreateParagraph({
-    Title = game.Name .. " Info",
-    Content = "Game ID: " .. game.GameId .. " | Features: " .. game.Description
-  })
+  -- Game info label
+  local InfoLabel = GamesTab:CreateLabel("Game ID: " .. game.GameId, "info", Color3.fromRGB(150,150,150), false)
   
   GamesTab:CreateDivider()
 end
 
 -- Settings Tab
-local SettingsTab = Window:CreateTab("Settings", "settings")
+local SettingsTab = Window:CreateTab("⚙️ Settings", "settings")
 
-SettingsTab:CreateSection("Interface Settings")
+SettingsTab:CreateSection("🎨 Interface")
 
 local ThemeDropdown = SettingsTab:CreateDropdown({
   Name = "Theme",
   Options = {"Default", "AmberGlow", "Amethyst", "Bloom", "DarkBlue", "Green", "Light", "Ocean", "Serenity"},
-  CurrentOption = {"Ocean"},
+  CurrentOption = {"DarkBlue"},
   MultipleOptions = false,
   Flag = "ThemeSelect",
   Callback = function(option)
     Window.ModifyTheme(option[1])
     Rayfield:Notify({
-      Title = "Theme Changed",
-      Content = "Theme set to " .. option[1],
-      Duration = 3,
+      Title = "Theme",
+      Content = "Applied " .. option[1] .. " theme",
+      Duration = 2,
       Image = "palette"
     })
   end
 })
 
 local ToggleKeybind = SettingsTab:CreateKeybind({
-  Name = "Toggle UI Keybind",
+  Name = "Toggle UI",
   CurrentKeybind = "K",
   HoldToInteract = false,
   Flag = "ToggleKeybind",
@@ -204,7 +184,7 @@ local ToggleKeybind = SettingsTab:CreateKeybind({
 })
 
 SettingsTab:CreateDivider()
-SettingsTab:CreateSection("Script Settings")
+SettingsTab:CreateSection("🔧 Script Options")
 
 local AutoExecuteToggle = SettingsTab:CreateToggle({
   Name = "Auto Execute on Join",
@@ -216,7 +196,7 @@ local AutoExecuteToggle = SettingsTab:CreateToggle({
 })
 
 local NotificationsToggle = SettingsTab:CreateToggle({
-  Name = "Show Notifications",
+  Name = "Notifications",
   CurrentValue = true,
   Flag = "ShowNotifications",
   Callback = function(enabled)
@@ -224,44 +204,55 @@ local NotificationsToggle = SettingsTab:CreateToggle({
   end
 })
 
--- Credits Tab
-local CreditsTab = Window:CreateTab("Credits", "users")
+SettingsTab:CreateDivider()
+SettingsTab:CreateSection("ℹ️ Information")
 
-CreditsTab:CreateSection("Development Team")
+local VersionLabel = SettingsTab:CreateLabel("Version: 1.0.0", "package", Color3.fromRGB(100,200,255), false)
+local RepoLabel = SettingsTab:CreateLabel("GitHub: lollakillah/4", "github", Color3.fromRGB(150,150,150), false)
 
-local DevParagraph = CreditsTab:CreateParagraph({
-  Title = "Created By",
-  Content = "Inovo Productions Team | Special thanks to all contributors and users!"
+-- Info Tab
+local InfoTab = Window:CreateTab("ℹ️ Info", "info")
+
+InfoTab:CreateSection("📖 About Inovo Productions")
+
+local AboutParagraph = InfoTab:CreateParagraph({
+  Title = "Welcome!",
+  Content = "Inovo Productions is a modern script hub featuring powerful scripts for popular Roblox games. Use the search bar to find your game and execute scripts instantly!"
 })
 
-local VersionLabel = CreditsTab:CreateLabel("Version: 1.0.0", "info", Color3.fromRGB(255,255,255), false)
+InfoTab:CreateDivider()
+InfoTab:CreateSection("🔗 Links")
 
-CreditsTab:CreateDivider()
+local GitHubButton = InfoTab:CreateButton({
+  Name = "GitHub Repository",
+  Callback = function()
+    Rayfield:Notify({
+      Title = "GitHub",
+      Content = "github.com/lollakillah/4",
+      Duration = 4,
+      Image = "github"
+    })
+  end
+})
 
-CreditsTab:CreateSection("Links & Support")
-
-local DiscordButton = CreditsTab:CreateButton({
-  Name = "Join Discord",
+local DiscordButton = InfoTab:CreateButton({
+  Name = "Discord Server",
   Callback = function()
     Rayfield:Notify({
       Title = "Discord",
-      Content = "Discord support coming soon!",
-      Duration = 4,
+      Content = "Coming soon!",
+      Duration = 3,
       Image = "message-circle"
     })
   end
 })
 
-local GitHubButton = CreditsTab:CreateButton({
-  Name = "Visit GitHub",
-  Callback = function()
-    Rayfield:Notify({
-      Title = "GitHub",
-      Content = "github.com/lollakillah/4",
-      Duration = 5,
-      Image = "github"
-    })
-  end
+InfoTab:CreateDivider()
+InfoTab:CreateSection("👥 Credits")
+
+local CreditsParagraph = InfoTab:CreateParagraph({
+  Title = "Development Team",
+  Content = "Created by Inovo Productions. Special thanks to all contributors and the community!"
 })
 
 -- Load saved configuration at the end

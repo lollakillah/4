@@ -1,0 +1,440 @@
+What is Rayfield?
+
+Rayfield Interface Suite is a UI library for Roblox that quickly provides a modern interface (windows, tabs, buttons, toggles, sliders, dropdowns, notifications), plus extras like a key system, Discord auto-join, and themes. The project is open-source and actively updated.
+Sirius Documentation
+
+Start: Loading the library
+
+Place this at the top of your script to load Rayfield:
+
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+
+This is the recommended method according to the docs.
+Sirius Documentation
+
+Creating a window (incl. config-saving, key system, Discord, hotkey)
+local Window = Rayfield:CreateWindow({
+  Name = "Rayfield Example Window",
+  Icon = 0,                         -- Lucide name (string) or Roblox imageId (number). 0 = no icon.
+  LoadingTitle = "Rayfield Interface Suite",
+  LoadingSubtitle = "by Sirius",
+  ShowText = "Rayfield",            -- button for mobile users
+  Theme = "Default",                -- or "AmberGlow","Amethyst","Bloom","DarkBlue","Green","Light","Ocean","Serenity"
+  ToggleUIKeybind = "K",            -- or Enum.KeyCode variants
+
+  DisableRayfieldPrompts = false,
+  DisableBuildWarnings = false,
+
+  ConfigurationSaving = {
+    Enabled = true,
+    FolderName = nil,               -- custom folder for your hub/game
+    FileName = "MyHub"
+  },
+
+  Discord = {
+    Enabled = false,
+    Invite = "noinvitelink",        -- only the code (without discord.gg/)
+    RememberJoins = true
+  },
+
+  KeySystem = false,                -- set true to require keys
+  KeySettings = {
+    Title = "MyHub",
+    Subtitle = "Key System",
+    Note = "Get the key from our site",
+    FileName = "MyHubKey",
+    SaveKey = true,
+    GrabKeyFromSite = false,
+    Key = {"Hello"}                 -- list of valid keys or raw-links
+  }
+})
+
+
+The available fields and KeySystem/Discord block are as shown in the docs. Note that ToggleUIKeybind can be both a string ("K") and an Enum.KeyCode.
+Sirius Documentation
+
+Saving & loading configuration
+
+Set ConfigurationSaving.Enabled = true, and choose a unique Flag for each interactive element. 2) Call Rayfield:LoadConfiguration() at the very bottom of your script. Then values are automatically restored.
+Sirius Documentation
+
+Tabs, sections, dividers & basic API
+local Tab = Window:CreateTab("Main", "rewind")        -- title + Lucide icon name
+local Section = Tab:CreateSection("Basics")
+local Divider = Tab:CreateDivider()
+
+-- UI visible/invisible
+Rayfield:SetVisibility(true)
+local isVisible = Rayfield:IsVisible()
+
+-- Remove entire interface
+-- Rayfield:Destroy()
+
+
+You can also use Lucide names for icons (like "rewind").
+Sirius Documentation
++1
+
+Interactive elements (Buttons, Toggles, Slider, Input, Dropdown, ColorPicker, Notifications)
+
+Important: Use a unique Flag for each element if you use ConfigurationSaving.
+Sirius Documentation
+
+-- Notification
+Rayfield:Notify({
+  Title = "Welcome!",
+  Content = "Rayfield is ready.",
+  Duration = 6.5,
+  Image = "rewind"                  -- Lucide icon or imageId
+})
+
+-- Button
+local Button = Tab:CreateButton({
+  Name = "Do something",
+  Callback = function()
+    print("Button pressed")
+  end
+})
+
+-- Toggle
+local Toggle = Tab:CreateToggle({
+  Name = "Godmode (demo)",
+  CurrentValue = false,
+  Flag = "T_Godmode",
+  Callback = function(on)
+    print("Toggle:", on)
+  end
+})
+
+-- Slider
+local Slider = Tab:CreateSlider({
+  Name = "Speed",
+  Range = {0, 100},
+  Increment = 5,
+  Suffix = "u",
+  CurrentValue = 25,
+  Flag = "S_Speed",
+  Callback = function(v)
+    print("Speed:", v)
+  end
+})
+
+-- Input (TextBox)
+local Input = Tab:CreateInput({
+  Name = "Player name",
+  CurrentValue = "",
+  PlaceholderText = "Type here...",
+  RemoveTextAfterFocusLost = false,
+  Flag = "I_Player",
+  Callback = function(txt)
+    print("Name:", txt)
+  end
+})
+
+-- Dropdown (single or multi-select)
+local Dropdown = Tab:CreateDropdown({
+  Name = "Map choice",
+  Options = {"Alpha","Bravo","Charlie"},
+  CurrentOption = {"Alpha"},
+  MultipleOptions = false,
+  Flag = "D_Map",
+  Callback = function(opts)
+    print("Chosen:", table.concat(opts, ", "))
+  end
+})
+
+-- Color picker
+local ColorPicker = Tab:CreateColorPicker({
+  Name = "HUD color",
+  Color = Color3.fromRGB(255,255,255),
+  Flag = "C_HUD",
+  Callback = function(color)
+    print("New color:", color)
+  end
+})
+
+
+The exact signatures and examples come from the "Elements" page (incl. Lucide-icon support).
+Sirius Documentation
+
+Updating during runtime
+
+Button:Set("New title")
+Toggle:Set(true)
+Slider:Set(10)
+Input:Set("Hello!")
+Dropdown:Refresh({"Delta","Echo"})   -- replaces the options
+Dropdown:Set({"Echo"})               -- also triggers the callback
+ColorPicker:Set(Color3.fromRGB(128,64,255))
+
+
+For dropdowns, Set() calls your callback again; Refresh() replaces the list.
+Sirius Documentation
+
+Keybinds
+local Keybind = Tab:CreateKeybind({
+  Name = "Open Menu",
+  CurrentKeybind = "RightCtrl",
+  HoldToInteract = false,
+  Flag = "K_OpenMenu",
+  Callback = function(isHeld)
+    print("Keybind activated; hold =", isHeld)
+  end
+})
+
+Keybind:Set("Q")
+
+
+Structure and fields according to the "Binds" docs.
+Sirius Documentation
+
+Textual components (Label & Paragraph)
+local Label = Tab:CreateLabel("Status: OK", "rewind", Color3.fromRGB(255,255,255), false)
+Label:Set("Status: Busy...")
+
+local Paragraph = Tab:CreateParagraph({ Title = "Info", Content = "Welcome to my hub." })
+Paragraph:Set({ Title = "Info", Content = "Started with default config." })
+
+
+See "Textual elements" (also Lucide-icon support here).
+Sirius Documentation
+
+Themes (built-ins and custom)
+
+Built-ins: Default, AmberGlow, Amethyst, Bloom, DarkBlue, Green, Light, Ocean, Serenity.
+Set it in CreateWindow(... Theme = "Ocean" ...) or change live with Window.ModifyTheme("Ocean"). For custom themes you pass a table with colors (e.g. TextColor, Background, Topbar, SliderBackground, ToggleEnabled, ...).
+Sirius Documentation
+
+Example (custom theme-table):
+
+Window.ModifyTheme({
+  TextColor = Color3.fromRGB(240,240,240),
+  Background = Color3.fromRGB(25,25,25),
+  Topbar = Color3.fromRGB(34,34,34),
+  Shadow = Color3.fromRGB(20,20,20),
+  NotificationBackground = Color3.fromRGB(20,20,20),
+  NotificationActionsBackground = Color3.fromRGB(230,230,230),
+  TabBackground = Color3.fromRGB(80,80,80),
+  TabStroke = Color3.fromRGB(85,85,85),
+  TabBackgroundSelected = Color3.fromRGB(210,210,210),
+  TabTextColor = Color3.fromRGB(240,240,240),
+  SelectedTabTextColor = Color3.fromRGB(50,50,50),
+  ElementBackground = Color3.fromRGB(35,35,35),
+  ElementBackgroundHover = Color3.fromRGB(40,40,40),
+  SecondaryElementBackground = Color3.fromRGB(25,25,25),
+  ElementStroke = Color3.fromRGB(50,50,50),
+  SecondaryElementStroke = Color3.fromRGB(40,40,40),
+  SliderBackground = Color3.fromRGB(50,138,220),
+  SliderProgress = Color3.fromRGB(50,138,220),
+  SliderStroke = Color3.fromRGB(58,163,255),
+  ToggleBackground = Color3.fromRGB(30,30,30),
+  ToggleEnabled = Color3.fromRGB(0,146,214),
+  ToggleDisabled = Color3.fromRGB(100,100,100),
+  ToggleEnabledStroke = Color3.fromRGB(0,170,255),
+  ToggleDisabledStroke = Color3.fromRGB(125,125,125),
+  ToggleEnabledOuterStroke = Color3.fromRGB(100,100,100),
+  ToggleDisabledOuterStroke = Color3.fromRGB(65,65,65),
+  DropdownSelected = Color3.fromRGB(40,40,40),
+  DropdownUnselected = Color3.fromRGB(30,30,30),
+  InputBackground = Color3.fromRGB(30,30,30),
+  InputStroke = Color3.fromRGB(65,65,65),
+  PlaceholderColor = Color3.fromRGB(178,178,178)
+})
+
+
+This schema comes directly from the theme documentation (fields/naming).
+Sirius Documentation
+
+Reading values (CurrentValue & Flags)
+
+You can read directly via the object (e.g. Toggle.CurrentValue, Keybind.CurrentKeybind, Dropdown.CurrentOption) or centralized via Rayfield.Flags with your own Flag names.
+Sirius Documentation
+
+print("Godmode on?", Toggle.CurrentValue)
+print("Keybind:", Keybind.CurrentKeybind)
+print("Chosen map:", table.concat(Dropdown.CurrentOption, ", "))
+
+-- Alternative via flags:
+print("Godmode (flags):", Rayfield.Flags.T_Godmode.CurrentValue)
+print("Speed (flags):", Rayfield.Flags.S_Speed.CurrentValue)
+
+At the very end: load configuration
+
+Put this line last in your script (after creating all elements):
+
+Rayfield:LoadConfiguration()
+
+
+Without this call, previous settings won't be automatically restored.
+Sirius Documentation
+
+Complete example script (everything together)
+
+Paste this directly into a LocalScript (e.g. StarterPlayerScripts) and adjust names/texts as needed:
+
+-- Load Rayfield
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+-- Window with config saving, theme and keybind
+local Window = Rayfield:CreateWindow({
+  Name = "My Hub",
+  Icon = 0,
+  LoadingTitle = "Rayfield Interface Suite",
+  LoadingSubtitle = "by Sirius",
+  ShowText = "Rayfield",
+  Theme = "Ocean",
+  ToggleUIKeybind = "K",
+
+  ConfigurationSaving = {
+    Enabled = true,
+    FolderName = "MyGame",
+    FileName = "MyHub"
+  },
+
+  Discord = {
+    Enabled = false,
+    Invite = "noinvitelink",
+    RememberJoins = true
+  },
+
+  KeySystem = false,
+  KeySettings = {
+    Title = "My Hub",
+    Subtitle = "Key System",
+    Note = "Get the key from our site",
+    FileName = "MyHubKey",
+    SaveKey = true,
+    GrabKeyFromSite = false,
+    Key = {"Hello"}
+  }
+})
+
+-- Tab & basics
+local Tab = Window:CreateTab("Main", "rewind")
+local Section = Tab:CreateSection("Basics")
+local Divider = Tab:CreateDivider()
+
+-- Notification
+Rayfield:Notify({
+  Title = "Welcome!",
+  Content = "UI loaded.",
+  Duration = 6.5,
+  Image = "rewind"
+})
+
+-- Elements
+local Button = Tab:CreateButton({
+  Name = "Print Hello",
+  Callback = function()
+    print("Hello from Rayfield")
+  end
+})
+
+local Toggle = Tab:CreateToggle({
+  Name = "Godmode (demo)",
+  CurrentValue = false,
+  Flag = "T_Godmode",
+  Callback = function(on)
+    print("Godmode:", on)
+  end
+})
+
+local Slider = Tab:CreateSlider({
+  Name = "Speed",
+  Range = {0, 100},
+  Increment = 5,
+  Suffix = "u",
+  CurrentValue = 25,
+  Flag = "S_Speed",
+  Callback = function(v)
+    print("Speed:", v)
+  end
+})
+
+local Input = Tab:CreateInput({
+  Name = "Player name",
+  CurrentValue = "",
+  PlaceholderText = "Type here...",
+  RemoveTextAfterFocusLost = false,
+  Flag = "I_Player",
+  Callback = function(txt)
+    print("Name:", txt)
+  end
+})
+
+local Dropdown = Tab:CreateDropdown({
+  Name = "Map choice",
+  Options = {"Alpha","Bravo","Charlie"},
+  CurrentOption = {"Alpha"},
+  MultipleOptions = false,
+  Flag = "D_Map",
+  Callback = function(opts)
+    print("Chosen:", table.concat(opts, ", "))
+  end
+})
+
+local ColorPicker = Tab:CreateColorPicker({
+  Name = "HUD color",
+  Color = Color3.fromRGB(255,255,255),
+  Flag = "C_HUD",
+  Callback = function(color)
+    print("New color:", color)
+  end
+})
+
+local Keybind = Tab:CreateKeybind({
+  Name = "Open Menu",
+  CurrentKeybind = "RightCtrl",
+  HoldToInteract = false,
+  Flag = "K_OpenMenu",
+  Callback = function(isHeld)
+    Rayfield:SetVisibility(not Rayfield:IsVisible())
+    print("Menu toggled; hold =", isHeld)
+  end
+})
+
+-- Textual components
+local Label = Tab:CreateLabel("Status: OK", "rewind", Color3.fromRGB(255,255,255), false)
+local Paragraph = Tab:CreateParagraph({ Title = "Info", Content = "Welcome to my hub." })
+
+-- Live updates (examples)
+Button:Set("Click to greet")
+Toggle:Set(true)
+Slider:Set(50)
+Input:Set("Player123")
+Dropdown:Refresh({"Delta","Echo"})
+Dropdown:Set({"Echo"})
+ColorPicker:Set(Color3.fromRGB(128,64,255))
+Label:Set("Status: Busy...")
+Paragraph:Set({ Title = "Info", Content = "Settings applied." })
+
+-- Reading values
+print("Godmode on?", Toggle.CurrentValue, "| (flags) ->", Rayfield.Flags.T_Godmode.CurrentValue)
+print("Keybind is:", Keybind.CurrentKeybind)
+print("Map:", table.concat(Dropdown.CurrentOption, ", "))
+print("Speed:", Rayfield.Flags.S_Speed.CurrentValue)
+
+-- At the very end: load config (restores saved values)
+Rayfield:LoadConfiguration()
+
+Common pitfalls & tips
+
+Unique Flags per element, otherwise values overwrite each other in the config.
+Sirius Documentation
++1
+
+Rayfield:LoadConfiguration() always at the bottom – only after all elements exist.
+Sirius Documentation
+
+For icons you can use Roblox imageId or Lucide names (e.g. "rewind").
+Sirius Documentation
++2
+Sirius Documentation
++2
+
+Helpful helpers: Rayfield:SetVisibility(true/false), Rayfield:IsVisible(), Rayfield:Destroy().
+Sirius Documentation
+
+Switching themes? Set Theme in CreateWindow or use Window.ModifyTheme("Ocean"); for advanced use pass a custom theme table.
+Sirius Documentation
